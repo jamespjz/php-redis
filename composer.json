@@ -1,0 +1,22 @@
+{
+    "name": "jamespi/php-redis",
+    "description": "php基于redis实现分布式锁、分布式缓存及对redis客户端api操作封装",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "pijianzhong",
+            "email": "jianzhongpi@163.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php":">=7.0",
+        "jamespi/php-consul-plugin": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jamespi\\Redis\\": "Src/"
+        }
+    }
+}
