@@ -4,6 +4,12 @@ php基于redis实现分布式锁、分布式缓存及对redis客户端api操作�
 
 # 简要说明：
 公司目前正在全面转微服务架构，为了让PHPER在分布式高并发场景下保证数据的准确性，特封装了含有redis分布式锁、分布式缓存及redis操作API功能的插件，目前为version 0.1-dev。
+---
+分布式锁具备以下四个特性：
+* 互斥性（一把锁只能加一次）
+* 原子性
+* 防止死锁产生（被客户端锁住用不释放，其他客户端没法使用）
+* 同一个客户端只能解锁自己加的锁
 
 # 功能简介：
 * 获取锁
@@ -25,7 +31,7 @@ git clone https://github.com/jamespjz/php-redis.git
 已经加入对composer支持，根目录下有个composer.json，请不要随意修改其中内容如果你不明白你在做什么操作。
 * composer下载
 ```
-composer require jamespi/php-swoole-consul-rpc dev-master
+composer require jamespi/php-redis dev-master
 ```
 
 # 使用方式
@@ -56,7 +62,11 @@ $redis_setting = 1; //1：单机环境 2：集群环境
 //获取redis分布式锁
 echo (new Start())->run($type, $config, $redis_setting)->acquireLock($param);
 //释放redis分布式锁
-echo (new Start())->run($type, $config, $redis_setting)->unLock($param);
+$params = [
+    'token_key' => 'token_key',
+    'identifier' => '4a3068a14f90554383dcaedf59c367a3',
+];
+echo (new Start())->run($type, $config, $redis_setting)->unLock($params);
 ```
 ***注意：配置数组的下标键名是约定好的，请不要定制个性化名称，如果不想系统报错或系统使用默认配置参数而达不到您想要的结果的话***
 

@@ -122,7 +122,7 @@ class RedisLock
             return Common::resultMsg('failed', '缺少请求必要参数');
         }
 
-        if ($this->ping($this->host, $this->port)){
+        if (!$this->ping($this->host, $this->port)){
             return Common::resultMsg('failed', 'REDIS服务器链接不上');
         }
 
@@ -171,7 +171,7 @@ class RedisLock
             return Common::resultMsg('failed', '缺少请求必要参数');
         }
 
-        if ($this->ping($this->host, $this->port)){
+        if (!$this->ping($this->host, $this->port)){
             return Common::resultMsg('failed', 'REDIS服务器链接不上');
         }
 

@@ -24,7 +24,7 @@ class Common
      */
     public static function resultMsg(string $status, string $msg, array $data = []):string
     {
-        if (!empty($data)){
+        if (empty($data)){
             $result = ['status'=>$status, 'msg'=>$msg];
         }else{
             $result = ['status'=>$status, 'msg'=>$msg, 'data'=>$data];
