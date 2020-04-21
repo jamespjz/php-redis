@@ -26,9 +26,11 @@ interface RedisLockInterface{
 
     /**
      * 释放分布式锁
-     * @param array $arguments 请求参数
+     * @param $instance 链接redis实例化对象
+     * @param string $token_key 分布式锁key
+     * @param string $identifier 分布式锁key值
      * @return mixed
      */
-    public function unLock(array $arguments);
+    public function unLock($instance, string $token_key, string $identifier);
 
 }

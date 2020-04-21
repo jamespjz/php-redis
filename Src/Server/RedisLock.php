@@ -44,17 +44,41 @@ luascript;
             if ($result == 1) {
                 return $identifier;
             }
+            usleep(100000);
         }
         return false;
     }
 
-    public function unLock(array $arguments)
+    /**
+     * 释放分布式锁
+     * @param array $instance 链接redis实例化对象
+     * @param string $token_key 分布式锁key
+     * @param string $identifier 分布式锁key值
+     * @return mixed|void
+     */
+    public function unLock($instance, string $token_key, string $identifier)
     {
-
+        $script = <<<luascript
+            local result = redis.call('get', KEYS[1])
+            if result == ARGV[1] 
+            then
+                if redis.call('del', KEYS[1]) == 1 
+                then
+                    return 1
+                end
+            end
+            return 0
+luascript;
+        $result = $instance->eval($script, array($token_key, $identifier), 1);
+        if ($result == 1) {
+            return true;
+        }
+        return false;
     }
 
     public function __call($name, $arguments)
     {
         // TODO: Implement __call() method.
+        return call_user_func_array([$this, $name], [$arguments]);
     }
 }

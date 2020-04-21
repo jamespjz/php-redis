@@ -39,6 +39,11 @@ class RedisLock
      */
     protected $token_key;
     /**
+     * redis分布式锁key值
+     * @var
+     */
+    protected $identifier;
+    /**
      * redis分布式锁获取次数
      * @var
      */
@@ -137,7 +142,45 @@ class RedisLock
      */
     public function unLock(int $redis_setting, array $arguments)
     {
-        
+        foreach ($arguments as $key=>$value){
+            switch ($key){
+                case 'host':
+                    if (is_string($value) && !empty($value))
+                        $this->host = $value;
+                    break;
+                case 'port':
+                    if (is_int($value) && !empty($value))
+                        $this->port = $value;
+                    break;
+                case 'auth':
+                    if (is_string($value) && !empty($value))
+                        $this->auth = $value;
+                    break;
+                case 'token_key':
+                    if (is_string($value) && !empty($value))
+                        $this->token_key = $value;
+                    break;
+                case 'identifier':
+                    if (is_string($value) && !empty($value))
+                        $this->identifier = $value;
+                    break;
+            }
+        }
+
+        if (empty($this->host) || empty($this->port) || empty($this->token_key) || empty($this->identifier)){
+            return Common::resultMsg('failed', '缺少请求必要参数');
+        }
+
+        if ($this->ping($this->host, $this->port)){
+            return Common::resultMsg('failed', 'REDIS服务器链接不上');
+        }
+
+        //链接服务器
+        $this->instance = $this->connect($redis_setting, $this->host, $this->port, $this->auth);
+        //调用获取分布式锁业务
+        $redisService = new RedisLockLogic(new RedisLockServer());
+        $result = $redisService->unLock($this->instance, $this->token_key, $this->identifier);
+        return $result;
     }
 
     /**
