@@ -15,8 +15,5 @@ return[
     'host' => '127.0.0.1',
     'port' => '6379',
     'auth' => null,
-    'token_key' => '',
-    'acquire_number' =>0,
-    'lock_timeout'=>10,
     'type' => 1, //1：redis客户端Api 2：分布式锁 3：分布式缓存
 ];

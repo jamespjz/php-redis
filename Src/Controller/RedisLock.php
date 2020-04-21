@@ -12,6 +12,7 @@
 
 namespace Jamespi\Redis\Controller;
 
+use Redis;
 use Jamespi\Redis\Server\RedisLock as RedisLockServer;
 use Jamespi\Redis\Logic\RedisLock as RedisLockLogic;
 use Jamespi\Redis\Common\Common;
@@ -55,11 +56,12 @@ class RedisLock
 
     /**
      * 链接Reids服务器
+     * @param int $redis_setting redis环境
      * @param string $host 链接地址
      * @param int $port 端口
-     * @param string $auth 密码
+     * @param $auth 密码
      */
-    public function connect(int $redis_setting, string $host, int $port, string $auth)
+    public function connect(int $redis_setting, string $host, int $port, $auth)
     {
         $redis = new \stdClass();
         if ($redis_setting == 1){
@@ -67,7 +69,6 @@ class RedisLock
             $redis = new Redis();
             $redis->connect($host, $port);
             $redis->auth($auth);
-            $redis->client('list');
         }else{
             //集群redis
 
@@ -124,17 +125,19 @@ class RedisLock
         $this->instance = $this->connect($redis_setting, $this->host, $this->port, $this->auth);
         //调用获取分布式锁业务
         $redisService = new RedisLockLogic(new RedisLockServer());
-        $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->lock_timeout);
+        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->lock_timeout);
+        return $result;
     }
 
     /**
      * 释放分布式锁
+     * @param int $redis_setting redis环境
      * @param array $arguments 请求参数
      * @return mixed|void
      */
-    public function unLock(array $arguments)
+    public function unLock(int $redis_setting, array $arguments)
     {
-
+        
     }
 
     /**
@@ -143,7 +146,7 @@ class RedisLock
      * @param int $port 请求端口
      * @return boolean
      */
-    protected function ping(string $host, int $port):boolean
+    protected function ping(string $host, int $port):bool
     {
         if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {        //IPv6
             $socket = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);

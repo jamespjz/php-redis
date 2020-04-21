@@ -12,6 +12,7 @@
 
 namespace Jamespi\Redis;
 
+use ReflectionClass;
 use Jamespi\Redis\Controller\RedisApi;
 use Jamespi\Redis\Controller\RedisLock;
 use Jamespi\Redis\Controller\RedisCache;
@@ -49,7 +50,7 @@ class Start
     public function run(int $type, array $config, int $redis_setting = 1)
     {
         if (!empty($config))
-            $this->config = $config;
+            $this->config = array_merge($this->config, $config);
         $this->redis_setting = $redis_setting;
         switch ($type){
             case 1:
@@ -71,7 +72,9 @@ class Start
 
     public function __call(string $name, array $arguments)
     {
-        $arguments = array_merge($arguments, $this->config);
+        foreach ($arguments as $value){
+            $arguments = array_merge($value, $this->config);
+        }
         // TODO: Implement __call() method.
         try{
             $class = new ReflectionClass($this->model);

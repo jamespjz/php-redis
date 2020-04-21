@@ -22,7 +22,7 @@ class Common
      * @param array $data
      * @return object
      */
-    public static function resultMsg(string $status, string $msg, array $data = []):object
+    public static function resultMsg(string $status, string $msg, array $data = []):string
     {
         if (!empty($data)){
             $result = ['status'=>$status, 'msg'=>$msg];

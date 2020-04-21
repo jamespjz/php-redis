@@ -16,10 +16,13 @@ interface RedisLockInterface{
 
     /**
      * 获取分布式锁
-     * @param array $arguments 请求参数
-     * @return mixed
+     * @param $instance 链接redis实例化对象
+     * @param string $token_key 分布式锁key
+     * @param string $identifier 分布式锁key值
+     * @param int $lock_timeout 分布式锁过期时间
+     * @return bool
      */
-    public function acquireLock(array $arguments);
+    public function acquireLock($instance, string $token_key, string $identifier, int $lock_timeout);
 
     /**
      * 释放分布式锁
