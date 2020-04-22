@@ -48,11 +48,12 @@ $config = [
         'host' => '192.168.109.58',
         'port' => 6379,
     ];
-    //redis锁相关信息
+    //redis锁相关信息（出于性能考虑，acquire_timeout建议设置1s以下，系统默认设置的1s，acquire_number系统默认3次，lock_timeout系统默认60s）
     $param = [
-        'token_key' => 'token_key',
-        'acquire_number' => 3,
-        'lock_timeout' => 20,
+        'token_key' => 'token_key', //必填，key
+        'acquire_number' => 3, //选填，限制请求次数
+        'lock_timeout' => 60, //选填，锁的超时时间
+        'acquire_timeout' => 1000000 //选填，请求锁超时时间(单位微秒)
     ];
 ];
 //业务场景

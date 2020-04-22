@@ -47,12 +47,17 @@ class RedisLock
      * redis分布式锁获取次数
      * @var
      */
-    protected $acquire_number = 1;
+    protected $acquire_number = 3;
+    /**
+     * 请求分布式锁超时时间（微妙）
+     * @var
+     */
+    protected $acquire_timeout = 1000000;
     /**
      * redis分布式锁超时时间（s）
      * @var
      */
-    protected $lock_timeout;
+    protected $lock_timeout = 60;
     /**
      * Redis服务器链接
      * @var
@@ -111,11 +116,19 @@ class RedisLock
                     if (is_int($value) && !empty($value))
                         $this->acquire_number = $value;
                     break;
+                case 'acquire_timeout':
+                    if (is_int($value) && !empty($value))
+                        $this->acquire_timeout = $value;
+                    break;
                 case 'lock_timeout':
                     if (is_int($value) && !empty($value))
                         $this->lock_timeout = $value;
                     break;
             }
+        }
+
+        if(!empty($this->acquire_timeout) && $this->acquire_timeout > 1000000){
+            return Common::resultMsg('failed', '请求超时时间设置过长，为不影响性能建议低于1秒');
         }
 
         if (empty($this->host) || empty($this->port) || empty($this->token_key) || empty($this->lock_timeout)){
@@ -130,7 +143,7 @@ class RedisLock
         $this->instance = $this->connect($redis_setting, $this->host, $this->port, $this->auth);
         //调用获取分布式锁业务
         $redisService = new RedisLockLogic(new RedisLockServer());
-        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->lock_timeout);
+        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->acquire_timeout, $this->lock_timeout);
         return $result;
     }
 
