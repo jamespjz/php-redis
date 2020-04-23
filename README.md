@@ -41,7 +41,11 @@ composer require jamespi/php-redis dev-master
 //在您项目根目录的入口文件中加入如下代码：
 require_once 'vendor/autoload.php';
 use Jamespi\Redis\Start;
-
+/**
+ * --------------------------------------------------------------
+ * 单节点
+ * --------------------------------------------------------------
+ */
 $config = [
     //redis服务器连接信息
     $config = [
@@ -60,6 +64,26 @@ $config = [
 $type = 2;//1：redis客户端Api 2：分布式锁 3：分布式缓存
 //redis环境
 $redis_setting = 1; //1：单机环境 2：集群环境
+/**
+ * --------------------------------------------------------------
+ * 集群
+ * --------------------------------------------------------------
+ */
+ //$config = [
+ //    'host' => '192.168.109.54',
+ //    'port' => 7002,
+ //    'auth' => '123456'
+ //];
+ //$param = [
+ //    'token_key' => 'token_key',
+ //    'acquire_number' => 2, //限制请求次数
+ //    'lock_timeout' => 300, //锁的超时时间
+ //    'acquire_timeout' => 1000000 //请求锁超时时间(单位微秒)
+ //];
+ //$type = 2;//1：redis客户端Api 2：分布式锁 3：分布式缓存
+ //$redis_setting = 2; //1：单节点 2：集群
+
+
 //获取redis分布式锁
 echo (new Start())->run($type, $config, $redis_setting)->acquireLock($param);
 //释放redis分布式锁
