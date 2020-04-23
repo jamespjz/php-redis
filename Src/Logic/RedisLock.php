@@ -30,11 +30,16 @@ class RedisLock
      * @param int $acquire_number 获取分布式锁次数
      * @param int $acquire_timeout 请求分布式锁超时时间
      * @param int $lock_timeout 分布式锁过期时间
+     * @param array $params 支撑参数
      * @return string
      */
-    public function acquireLock($instance, string $token_key, int $acquire_number, int $acquire_timeout, int $lock_timeout):string
+    public function acquireLock($instance, string $token_key, int $acquire_number, int $acquire_timeout, int $lock_timeout, array $params):string
     {
-        $time = $instance->time();
+        if (isset($params['redis_setting']) && $params['redis_setting'] == 1){
+            $time = $instance->time();
+        }else{
+            $time = $instance->time('x');
+        }
         $acquire_time = $time[0] + ceil(($time[1]+$acquire_timeout)/1000000);
         $identifier = md5($time[0].$time[1].mt_rand(1, 10000000));
         $token_key = 'lock:'.$token_key;

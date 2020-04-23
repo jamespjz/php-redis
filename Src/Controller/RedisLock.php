@@ -13,6 +13,7 @@
 namespace Jamespi\Redis\Controller;
 
 use Redis;
+use RedisCluster;
 use Jamespi\Redis\Server\RedisLock as RedisLockServer;
 use Jamespi\Redis\Logic\RedisLock as RedisLockLogic;
 use Jamespi\Redis\Common\Common;
@@ -81,7 +82,7 @@ class RedisLock
             $redis->auth($auth);
         }else{
             //集群redis
-
+            $redis = new RedisCluster(null, [$host.":".$port], 1.5, 1.5, true, $auth);
         }
         return $redis;
     }
@@ -142,8 +143,9 @@ class RedisLock
         //链接服务器
         $this->instance = $this->connect($redis_setting, $this->host, $this->port, $this->auth);
         //调用获取分布式锁业务
+        $params = ['redis_setting' => $redis_setting];
         $redisService = new RedisLockLogic(new RedisLockServer());
-        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->acquire_timeout, $this->lock_timeout);
+        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->acquire_timeout, $this->lock_timeout, $params);
         return $result;
     }
 
