@@ -61,7 +61,7 @@ abstract class RedisBasic
                         $auth = $value;
                     break;
                 case 'redis_setting':
-                    if (is_string($value) && !empty($value))
+                    if (is_int($value) && !empty($value))
                         $redis_setting = $value;
                     break;
             }

@@ -45,7 +45,7 @@ class RedisCache
     }
 
     /**
-     * 设置string类型变量
+     * 更新缓存
      * @param array $arguments 请求参数
      * @return string
      */
@@ -75,8 +75,35 @@ class RedisCache
         return $redisServer->write($this->config, $this->mysql, $this->paramsData);
     }
 
-    public function read():string
+    /**
+     * 读取缓存
+     * @param array $arguments 请求参数
+     * @return string
+     */
+    public function read(array $arguments):string
     {
+        foreach ($arguments as $key=>$value){
+            switch ($key){
+                case 'cache_mode':
+                    if (is_int($value) && !empty($value))
+                        $this->paramsData['cache_mode'] = $value;
+                    break;
+                case 'key':
+                    if (is_string($value) && !empty($value))
+                        $this->paramsData['key'] = $value;
+                    break;
+                case 'field':
+                    if (is_string($value) && !empty($value))
+                        $this->paramsData['field'] = $value;
+                    break;
+                case 'type':
+                    if (is_string($value) && !empty($value))
+                        $this->paramsData['type'] = $value;
+                    break;
+            }
+        }
 
+        $redisServer = new RedisCacheLogic(new RedisCacheServer($this->config));
+        return $redisServer->read($this->config, $this->mysql, $this->paramsData);
     }
 }
