@@ -15,6 +15,19 @@ namespace Jamespi\Redis\Server;
 use Jamespi\Redis\Api\RedisApiInterface;
 class RedisCache extends redisBasic implements RedisApiInterface
 {
+
+    /**
+     * 获取key的缓存
+     * @param string $key
+     * @param bool $is_add 是否需要加前缀
+     * @return mixed
+     */
+    public function get(string $key, bool $is_add=false)
+    {
+        if (!empty($key) && $is_add)   $key = "cache:".$key;
+        return $this->redisInstance->get($key);
+    }
+
     /**
      * 删除key
      * @param string $key

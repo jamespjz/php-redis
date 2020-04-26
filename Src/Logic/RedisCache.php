@@ -15,6 +15,7 @@ namespace Jamespi\Redis\Logic;
 use ReflectionClass;
 use Jamespi\Redis\Api\RedisApiInterface;
 use Jamespi\Redis\Common\Common;
+use Jamespi\Redis\Controller\RedisLock;
 class RedisCache
 {
     /**
@@ -22,15 +23,40 @@ class RedisCache
      * @var RedisApiInterface
      */
     protected $redisCache;
-
     /**
      * Mysql服务器链接
      * @var
      */
     protected $mysqlInstance;
+    /**
+     * 随机时间开始位置
+     * @var
+     */
+    protected $begintime;
+    /**
+     * 随机时间结束位置
+     * @var
+     */
+    protected $endtime;
+    /**
+     * 分布式锁名称
+     * @var
+     */
+    protected $lock_name;
+    /**
+     * 分布式锁key
+     * @var
+     */
+    protected $rock_key = 'read_cache';
 
+    /**
+     * RedisCache constructor.
+     * @param RedisApiInterface $redisCache
+     */
     public function __construct(RedisApiInterface $redisCache)
     {
+        $this->begintime = date("Y-m-d H:i:s");
+        $this->endtime = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"))+7200);
         $this->redisCache = $redisCache;
     }
 
@@ -93,14 +119,10 @@ class RedisCache
                 //缓存更新模式(1：Cache Aside模式 2：Through模式 3：Write Back模式)
                 $cache_mode = (isset($paramsData['cache_mode'])&&$paramsData['cache_mode']>0)?1:1;
                 $this->_mysqlConnect($mysql);
-                $result = $this->_getCacheData($cache_mode, $paramsData);
 
-//                if ($result){
-//                    $this->redisCache->sCard($paramsData['key']);
-//                    return Common::resultMsg('success', '更新缓存成功！');
-//                }
-//                else
-//                    return Common::resultMsg('failed', '更新缓存失败！');
+                $result = $this->_getCacheData($cache_mode, $config, $paramsData);
+
+                return Common::resultMsg('success', '获取缓存成功！', [$result]);
             }
         }else{
             return $resultData;
@@ -110,18 +132,65 @@ class RedisCache
     /**
      * 查询缓存
      * @param int $cache_mode
+     * @param array $config
      * @param array $paramsData
      */
-    private function _getCacheData(int $cache_mode, array $paramsData)
+    private function _getCacheData(int $cache_mode, array $config, array $paramsData)
     {
+        $param = [
+            'token_key' => $this->rock_key,
+            'lock_timeout' => 120, //锁的超时时间
+            'acquire_timeout' => 100000 //请求锁超时时间(单位微秒)
+        ];
+        $lock = new RedisLock($config);
+        //获取分布式锁
+        $lockInfo = json_decode($lock->acquireLock($param), true);
+        $this->lock_name = $lockInfo['data'];
+        //查询持久化数据
         $result = $this->_checkMode($cache_mode, 2, $paramsData);
         if (is_array($result) && !empty($result)){
-            var_dump($paramsData);
+            if(is_array($result['data'])&&!empty($result['data']))
+                $data = $result['data'];
+            else
+                $data = json_encode([[$paramsData['result_value']]]);
+        }else{
+            $data = json_encode([[$paramsData['result_value']]]);
         }
+        //将持久化数据写入缓存
+        switch ($paramsData['type']){
+            case 'string':
+                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                break;
+            case 'hash':
+                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                break;
+            case 'list':
+                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                break;
+            case 'set':
+                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                break;
+            case 'sorted_set':
+                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                break;
+        }
+
+        return $data[0][0];
     }
 
     /**
-     * 选择数据处理类型
+     * 获取时间范围内的随机时间段
+     * @return false|string
+     */
+    private function _randomDate() {
+        $begin = strtotime($this->begintime);
+        $end = $this->endtime == "" ? mktime() : strtotime($this->endtime);
+        $timestamp = rand($begin, $end);
+        return date("Y-m-d H:i:s", $timestamp);
+    }
+
+    /**
+     * 选择数据处理类型查询缓存
      * @param $paramsData
      * @return array
      */
@@ -219,7 +288,17 @@ class RedisCache
             $class = $this->mysqlInstance['namespace'];
             $action = $this->mysqlInstance['action'];
             try{
-                $result = call_user_func_array([new $class(), $action], [$param]);
+                if ($option == 2 ){
+                    if ($this->redisCache->get($this->rock_key) == $this->lock_name){
+                        $result = call_user_func_array([new $class(), $action], [$param]);
+                    }else{
+                        $result = json_encode([]);
+                    }
+
+                }else{
+                    $result = call_user_func_array([new $class(), $action], [$param]);
+                }
+
                 if ($result){
                     return ['type'=> $paramsData['type'], 'key' => $paramsData['key'], 'data'=>$result];
                 }

@@ -15,6 +15,14 @@ namespace Jamespi\Redis\Api;
 interface RedisApiInterface{
 
     /**
+     * 获取key的缓存
+     * @param string $key
+     * @param bool $is_add
+     * @return mixed
+     */
+    public function get(string $key, bool $is_add=false);
+
+    /**
      * 删除key
      * @param string $key
      * @return int
