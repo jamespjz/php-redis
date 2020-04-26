@@ -12,10 +12,14 @@
 
 namespace Jamespi\Redis\Server;
 
-use Jamespi\Redis\Api\RedisCacheInterface;
-class RedisCache extends redisBasic implements RedisCacheInterface
+use Jamespi\Redis\Api\RedisApiInterface;
+class RedisCache extends redisBasic implements RedisApiInterface
 {
 
+    public function del()
+    {
+
+    }
 
     public function __call($name, $arguments)
     {

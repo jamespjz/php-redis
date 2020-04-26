@@ -19,51 +19,61 @@ use Jamespi\Redis\Controller\RedisCache;
 class Start
 {
     /**
-     * 服务配置项
+     * 锁服务配置项
      * @var mixed
      */
-    protected $config;
+    protected $config = [];
+    /**
+     * 缓存服务配置项
+     * @var mixed
+     */
+    protected $cacheConfig = [];
+    /**
+     * 业务场景类别
+     * @var mixed
+     */
+    protected $type = 1;
     /**
      * 服务实例化对象
      * @var object
      */
     protected $model;
 
-    /**
-     * reids环境
-     * @var mixed
-     */
-    protected $redis_setting;
-
     public function __construct()
     {
         $this->config = require_once (__DIR__.'/Config/config.php');
+        $this->cacheConfig = require_once (__DIR__.'/Config/cacheConfig.php');
     }
 
     /**
      * 启动服务
-     * @param int $redis_setting redis环境（1：单机 2：集群）
      * @param int $type 服务类型
      * @param array $config 服务配置
      * @return $this 服务实例化对象
      */
-    public function run(int $type, array $config, int $redis_setting = 1)
+    public function run(int $type, array $config)
     {
-        if (!empty($config))
-            $this->config = array_merge($this->config, $config);
-        $this->redis_setting = $redis_setting;
+        $mysql = [];
+        $this->type = $type;
+        if ($type == 2){
+            if (!empty($config)) $this->config = array_merge($this->config, $config);
+        }elseif ($type == 3){
+            if (isset($config['mysql']) && !empty($config['mysql']))    $mysql = $config['mysql'];
+            if (!empty($config)) $this->cacheConfig = array_merge($this->cacheConfig, $config['cache']);
+        }
+
         switch ($type){
             case 1:
-                $this->model = (new RedisApi());
+                $this->model = (new RedisApi($this->config));
                 break;
             case 2:
-                $this->model = (new RedisLock());
+                $this->model = (new RedisLock($this->config));
                 break;
             case 3:
-                $this->model = (new RedisCache());
+                $this->model = (new RedisCache($this->cacheConfig, $mysql));
                 break;
             default:
-                $this->model = (new RedisApi());
+                $this->model = (new RedisLock($this->config));
                 break;
         }
 
@@ -72,14 +82,11 @@ class Start
 
     public function __call(string $name, array $arguments)
     {
-        foreach ($arguments as $value){
-            $arguments = array_merge($value, $this->config);
-        }
         // TODO: Implement __call() method.
         try{
             $class = new ReflectionClass($this->model);
             $class->getMethod($name);
-            $data = call_user_func_array([$this->model, $name], [$this->redis_setting, $arguments]);
+            $data = call_user_func_array([$this->model, $name], [$arguments]);
             $data = json_decode($data, true);
             if ($data['status'] == 'success')
                 return json_encode(['status'=>'success', 'msg'=>'调用成功！', 'data'=>$data['data']]);

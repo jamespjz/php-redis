@@ -2,7 +2,7 @@
 /**+----------------------------------------------------------------------
  * JamesPi Redis [php-redis]
  * +----------------------------------------------------------------------
- * Redis Service Interface Configuration file
+ * Redis Cache Service Configuration file
  * +----------------------------------------------------------------------
  * Copyright (c) 2020-2030 http://www.pijianzhong.com All rights reserved.
  * +----------------------------------------------------------------------
@@ -10,10 +10,9 @@
  * +----------------------------------------------------------------------
  */
 
-namespace Jamespi\Redis\Api;
-
-interface RedisApiInterface{
-
-    public function del();
-
-}
+return [
+    'host' => '127.0.0.1',
+    'port' => '6379',
+    'auth' => '123456',
+    'redis_setting' => 1, //redis环境（1：单机 2：集群）
+];
