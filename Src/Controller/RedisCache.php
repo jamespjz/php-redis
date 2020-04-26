@@ -58,21 +58,21 @@ class RedisCache
                         $this->paramsData['cache_mode'] = $value;
                     break;
                 case 'key':
-                    if (is_int($value) && !empty($value))
+                    if (is_string($value) && !empty($value))
                         $this->paramsData['key'] = $value;
                     break;
                 case 'msg':
-                    if (is_int($value) && !empty($value))
+                    if (is_string($value) && !empty($value))
                         $this->paramsData['msg'] = $value;
                     break;
                 case 'type':
-                    if (is_int($value) && !empty($value))
+                    if (is_string($value) && !empty($value))
                         $this->paramsData['type'] = $value;
                     break;
             }
         }
-        $redisServer = new RedisCacheLogic(new RedisCacheServer());
-        $redisServer->write($this->config, $this->mysql, $this->paramsData);
+        $redisServer = new RedisCacheLogic(new RedisCacheServer($this->config));
+        return $redisServer->write($this->config, $this->mysql, $this->paramsData);
     }
 
     public function read():string

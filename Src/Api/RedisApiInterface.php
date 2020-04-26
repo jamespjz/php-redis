@@ -14,6 +14,6 @@ namespace Jamespi\Redis\Api;
 
 interface RedisApiInterface{
 
-    public function del();
+    public function del(string $key):int ;
 
 }

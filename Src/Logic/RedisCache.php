@@ -12,8 +12,6 @@
 
 namespace Jamespi\Redis\Logic;
 
-use Redis;
-use RedisCluster;
 use ReflectionClass;
 use Jamespi\Redis\Api\RedisApiInterface;
 use Jamespi\Redis\Common\Common;
@@ -24,11 +22,7 @@ class RedisCache
      * @var RedisApiInterface
      */
     protected $redisCache;
-    /**
-     * Redis服务器链接
-     * @var
-     */
-    protected $redisInstance;
+
     /**
      * Mysql服务器链接
      * @var
@@ -49,26 +43,47 @@ class RedisCache
      */
     public function write(array $config, array $mysql, array $paramsData):string
     {
+        $resultStatus = false;
         //缓存更新模式(1：Cache Aside模式 2：Through模式 3：Write Back模式)
         $cache_mode = (isset($paramsData['cache_mode'])&&$paramsData['cache_mode']>0)?1:1;
-        $this->redisInstance = $this->_redisConnect($config);
         $this->_mysqlConnect($mysql);
         $result = $this->_checkMode($cache_mode, $paramsData);
         if ($result){
             switch ($result['type']){
                 case 'string':
-                    $this->redisCache->del($result['key']);
+                    $resultStatus = $this->redisCache->del($result['key']);
+                    if ($resultStatus == 1) $resultStatus = true;
                     break;
                 case 'hash':
+                    $resultStatus = $this->redisCache->del($result['key']);
                     break;
                 case 'list':
+                    $resultStatus = $this->redisCache->del($result['key']);
                     break;
                 case 'set':
+                    $resultStatus = $this->redisCache->del($result['key']);
                     break;
                 case 'sorted_set':
+                    $resultStatus = $this->redisCache->del($result['key']);
                     break;
             }
+            if (!$resultStatus) {
+                $class = $this->mysqlInstance['edit']['namespace'];
+                $action = $this->mysqlInstance['edit']['action'];
+                try{
+                    $result = call_user_func_array([new $class(), $action], [[$result['key']]]);
+                    if (!$result){
+                        return Common::resultMsg('failed', '缓存持久化数据清除失败！');
+                    }
+                }catch (\Exception $e){
+                    return Common::resultMsg('failed', '数据库建立通信失败，缓存持久化数据清除失败！');
+                }
+            }
         }
+        if ($resultStatus)
+            return Common::resultMsg('success', '更新锁成功！');
+        else
+            return Common::resultMsg('failed', '更新锁失败，缓存持久化数据已清除！');
     }
 
     /**
@@ -114,10 +129,10 @@ class RedisCache
         }
 
         if ($this->mysqlInstance){
-            $class = $this->mysqlInstance['namespace'];
-            $action = $this->mysqlInstance['action'];
+            $class = $this->mysqlInstance['add']['namespace'];
+            $action = $this->mysqlInstance['add']['action'];
             try{
-                $result = call_user_func_array([$class, $action], [$param]);
+                $result = call_user_func_array([new $class(), $action], [$param]);
                 if ($result){
                     return ['type'=> $paramsData['type'], 'key' => $paramsData['key']];
                 }
@@ -173,50 +188,6 @@ class RedisCache
     }
 
     /**
-     * Redis服务器连接
-     * @param array $config
-     * @return Redis|RedisCluster
-     */
-    private function _redisConnect(array $config)
-    {
-        $redis_setting = 1;
-        $host = '127.0.0.1';
-        $port = 6379;
-        $auth = '123456';
-        foreach ($config as $key=>$value){
-            switch ($key){
-                case 'host':
-                    if (is_string($value) && !empty($value))
-                        $host = $value;
-                    break;
-                case 'port':
-                    if (is_int($value) && !empty($value))
-                        $port = $value;
-                    break;
-                case 'auth':
-                    if (is_string($value) && !empty($value))
-                        $auth = $value;
-                    break;
-                case 'redis_setting':
-                    if (is_string($value) && !empty($value))
-                        $redis_setting = $value;
-                    break;
-            }
-        }
-
-        if ($redis_setting == 1){
-            //单机redis
-            $redis = new Redis();
-            $redis->connect($host, $port);
-            $redis->auth($auth);
-        }else{
-            //集群redis
-            $redis = new RedisCluster(null, [$host.":".$port], 1.5, 1.5, true, $auth);
-        }
-        return $redis;
-    }
-
-    /**
      * mysql数据库连接
      * @param array $config
      * @return \mysqli
@@ -224,8 +195,8 @@ class RedisCache
     private function _mysqlConnect(array $config)
     {
         try{
-            $class = new ReflectionClass($config['namespace']);
-            $class->getMethod($config['action']);
+            $class = new ReflectionClass($config['add']['namespace']);
+            $class->getMethod($config['add']['action']);
             $this->mysqlInstance = $config;
             return true;
         }catch (\Exception $e){

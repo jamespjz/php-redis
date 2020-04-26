@@ -15,10 +15,9 @@ namespace Jamespi\Redis\Server;
 use Jamespi\Redis\Api\RedisApiInterface;
 class RedisCache extends redisBasic implements RedisApiInterface
 {
-
-    public function del()
+    public function del(string $key):int
     {
-
+        $this->redisInstance->del($key);
     }
 
     public function __call($name, $arguments)
