@@ -150,7 +150,7 @@ class RedisLock
         }
 
         //调用获取分布式锁业务
-        $redisService = new RedisLockLogic(new RedisLockServer());
+        $redisService = new RedisLockLogic(new RedisLockServer($this->config));
         $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->acquire_timeout, $this->lock_timeout, $this->config);
         return $result;
     }

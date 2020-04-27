@@ -145,7 +145,7 @@ class RedisCache
         $lock = new RedisLock($config);
         //获取分布式锁
         $lockInfo = json_decode($lock->acquireLock($param), true);
-        $this->lock_name = $lockInfo['data'];
+        $this->lock_name = $lockInfo['data'][0];
         //查询持久化数据
         $result = $this->_checkMode($cache_mode, 2, $paramsData);
         if (is_array($result) && !empty($result)){
@@ -159,10 +159,10 @@ class RedisCache
         //将持久化数据写入缓存
         switch ($paramsData['type']){
             case 'string':
-                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                $this->redisCache->set($paramsData['key'], $data[0][0], $paramsData['cache_timeout']);
                 break;
             case 'hash':
-                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                $this->redisCache->hSet($paramsData['key'], $paramsData['field'], $data[0][0]);
                 break;
             case 'list':
                 $this->redisCache->set($paramsData['key'], $data[0][0]);
@@ -300,7 +300,7 @@ class RedisCache
                 }
 
                 if ($result){
-                    return ['type'=> $paramsData['type'], 'key' => $paramsData['key'], 'data'=>$result];
+                    return ['type'=> $paramsData['type'], 'key' => $paramsData['key'], 'data'=>json_decode($result, true)];
                 }
                 return false;
             }catch (\Exception $e){

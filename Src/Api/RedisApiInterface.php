@@ -15,6 +15,16 @@ namespace Jamespi\Redis\Api;
 interface RedisApiInterface{
 
     /**
+     * 设置key缓存
+     * @param string $key
+     * @param string $value
+     * @param int $timeout
+     * @param bool $is_add 是否需要加前缀
+     * @return bool
+     */
+    public function set(string $key, string $value, int $timeout, bool $is_add=false):bool ;
+
+    /**
      * 获取key的缓存
      * @param string $key
      * @param bool $is_add

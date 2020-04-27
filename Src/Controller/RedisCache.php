@@ -100,6 +100,10 @@ class RedisCache
                     if (is_string($value) && !empty($value))
                         $this->paramsData['type'] = $value;
                     break;
+                case 'cache_timeout':
+                    if (is_int($value) && !empty($value))
+                        $this->paramsData['cache_timeout'] = $value;
+                    break;
             }
         }
 

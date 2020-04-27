@@ -17,6 +17,20 @@ class RedisCache extends redisBasic implements RedisApiInterface
 {
 
     /**
+     * 设置key缓存
+     * @param string $key
+     * @param string $value
+     * @param int $timeout 过期时间
+     * @param bool $is_add 是否需要加前缀
+     * @return bool
+     */
+    public function set(string $key, string $value, int $timeout, bool $is_add=false):bool
+    {
+        if (!empty($key) && $is_add)   $key = "cache:".$key;
+        return $this->redisInstance->set($key, $value, $timeout);
+    }
+
+    /**
      * 获取key的缓存
      * @param string $key
      * @param bool $is_add 是否需要加前缀
