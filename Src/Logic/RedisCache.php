@@ -139,8 +139,8 @@ class RedisCache
     {
         $param = [
             'token_key' => $this->rock_key,
-            'lock_timeout' => 120, //锁的超时时间
-            'acquire_timeout' => 100000 //请求锁超时时间(单位微秒)
+            'lock_timeout' => $config['lock_timeout'], //锁的超时时间
+            'acquire_timeout' => $config['acquire_timeout'] //请求锁超时时间(单位微秒)
         ];
         $lock = new RedisLock($config);
         //获取分布式锁

@@ -15,4 +15,6 @@ return [
     'port' => '6379',
     'auth' => '123456',
     'redis_setting' => 1, //redis环境（1：单机 2：集群）
+    'lock_timeout' => 120, //锁的超时时间
+    'acquire_timeout' => 100000 //请求锁超时时间(单位微秒)
 ];

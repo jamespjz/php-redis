@@ -93,6 +93,44 @@ $params = [
 ];
 echo (new Start())->run($type, $config, $redis_setting)->unLock($params);
 ```
+> 调用redis分布式缓存例子
+```
+//获取分布式缓存
+use Jamespi\Redis\Start;
+$type = 3;//1：redis客户端Api 2：分布式锁 3：分布式缓存
+$config = [
+    'cache' => [
+        'host' => '192.168.109.54',
+        'port' => 7002,
+        'auth' => '123456',
+        'redis_setting' => 2 //redis环境（1：单机 2：集群）
+    ],
+    'mysql' => [
+        'namespace' => 'App\IndexController',
+        'action' => 'test_select', //select表：test_select；add表：test； delete表：test_delete
+    ]
+];
+/****  更新缓存 ****/
+//string时msg为字符串；hash、list、set、sorted_set时msg为json_encode；
+$params = [
+    'cache_mode' => 1,//(目前只支持Aside模式)缓存更新模式 >> 1：Cache Aside模式 2：Through模式 3：Write Back模式
+    'key' => 'token_key', //缓存key
+    'msg' => '4a3068a14f90554383dcaedf59c367a3', //缓存key值
+    'type' => 'string' //数据类型：string、hash、list、set、sorted_set
+];
+//echo (new Start())->run($type, $config)->write($params);
+/****  读取缓存 ****/
+$params_read = [
+    'cache_mode' => 1,//(目前只支持Aside模式)缓存更新模式 >> 1：Cache Aside模式 2：Through模式 3：Write Back模式
+    'key' => 'token_key', //缓存key
+    'field' => 'field', //缓存二级key
+    'msg' => '4a3068a14f90554383dcaedf59c367a3', //缓存key值
+    'type' => 'string', //数据类型：string、hash、list、set、sorted_set
+    'cache_timeout' => 50 //缓存失效时间（为防止缓存雪崩尽量时间采用基于时间段随机时间）
+];
+echo (new Start())->run($type, $config)->read($params_read);
+```
+
 ***注意：配置数组的下标键名是约定好的，请不要定制个性化名称，如果不想系统报错或系统使用默认配置参数而达不到您想要的结果的话***
 
 # 联系方式
