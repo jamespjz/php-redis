@@ -1,4 +1,4 @@
-# 皮皮分布式锁(php-redis-lock)
+# PP分布式锁(php-redis-lock)
 php基于redis实现分布式锁、分布式缓存及对redis客户端api操作封装
 >使用版本说明：Redis v5.0.5 - PHP v7.4.1 - Composer v1.10
 
@@ -14,11 +14,7 @@ php基于redis实现分布式锁、分布式缓存及对redis客户端api操作�
 # 功能简介：
 * 获取锁
 * 删除锁
-* redis(key)API
-* redis(string)API
-* redis(hash)API
-* redis(list)API
-* redis(set)API
+* redis(key、string、hash、list、set)API
 * 发布/订阅
 * 分布式缓存
 * 其余特性参考 https://www.redis.net.cn/tutorial/3501.html
@@ -106,6 +102,7 @@ $config = [
         'redis_setting' => 2 //redis环境（1：单机 2：集群）
     ],
     'mysql' => [
+        //redis缓存持久化时插件回调接入方持久化(查询、删除)方法
         'namespace' => 'App\IndexController',
         'action' => 'test_select', //select表：test_select；add表：test； delete表：test_delete
     ]
