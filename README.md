@@ -1,6 +1,6 @@
 # PP分布式锁(php-redis-lock)
 php基于redis实现分布式锁、分布式缓存及对redis客户端api操作封装
->使用版本说明：Redis v5.0.5 - PHP v7.4.1 - Composer v1.10
+>使用版本说明：Redis v5.0.5 - PHP >=7.0 - Composer v1.10
 
 # 简要说明：
 公司目前正在全面转微服务架构，为了让PHPER在分布式高并发场景下保证数据的准确性，特封装了含有redis分布式锁、分布式缓存及redis操作API功能的插件，目前为version 0.1-dev。
