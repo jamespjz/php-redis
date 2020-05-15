@@ -67,11 +67,8 @@ class RedisLock
      */
     public function unLock($instance, string $token_key, string $identifier):string
     {
-        $clientInfo = $instance->client('list');
-        $clientInfo = end($clientInfo);
         $token_key = 'lock:'.$token_key;
         $result = $this->redisLock->unLock($instance, $token_key, $identifier);
-        $instance->client('kill', $clientInfo['addr']);
         if ($result){
             return Common::resultMsg('success', '分布式锁释放成功');
         }

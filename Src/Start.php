@@ -89,9 +89,9 @@ class Start
             $data = call_user_func_array([$this->model, $name], $arguments);
             $data = json_decode($data, true);
             if ($data['status'] == 'success')
-                return json_encode(['status'=>'success', 'msg'=>'调用成功！', 'data'=>$data['data']]);
+                return json_encode(['status'=>'success', 'msg'=>'调用成功！', 'data'=>isset($data['data'])?$data['data']:[]]);
             else
-                return json_encode(['status'=> 'failed', 'msg'=>'Error：'.$data['msg'], 'data'=>$data['data']]);
+                return json_encode(['status'=> 'failed', 'msg'=>'Error：'.isset($data['msg'])?$data['msg']:[], 'data'=>isset($data['data'])?$data['data']:[]]);
         }catch (\Exception $e){
             return json_encode(['status'=> 'failed', 'msg'=>'Error：'.$e->getMessage()]);
         }

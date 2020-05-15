@@ -184,7 +184,7 @@ class RedisLock
         }
 
         //调用获取分布式锁业务
-        $redisService = new RedisLockLogic(new RedisLockServer());
+        $redisService = new RedisLockLogic(new RedisLockServer($this->config));
         $result = $redisService->unLock($this->instance, $this->token_key, $this->identifier);
         return $result;
     }
