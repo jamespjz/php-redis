@@ -65,7 +65,10 @@ luascript;
             then
                 if redis.call('del', KEYS[1]) == 1 
                 then
-                    return 1
+                    if redis.call('hdel', 'client',KEYS[1]) == 1
+                    then
+                        return 1
+                    end
                 end
             end
             return 0

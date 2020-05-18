@@ -70,6 +70,7 @@ class RedisLock
         $token_key = 'lock:'.$token_key;
         $result = $this->redisLock->unLock($instance, $token_key, $identifier);
         if ($result){
+            $instance->hDel('client', $token_key);
             return Common::resultMsg('success', '分布式锁释放成功');
         }
         return Common::resultMsg('failed', '分布式锁释放失败');

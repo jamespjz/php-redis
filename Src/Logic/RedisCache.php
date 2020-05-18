@@ -73,7 +73,7 @@ class RedisCache
         //缓存更新模式(1：Cache Aside模式 2：Through模式 3：Write Back模式)
         $cache_mode = (isset($paramsData['cache_mode'])&&$paramsData['cache_mode']>0)?1:1;
         $this->_mysqlConnect($mysql);
-        $result = $this->_checkMode($cache_mode, 1,$paramsData);
+        $result = $this->_checkMode($cache_mode, 1, $paramsData);
         if ($result){
             switch ($result['type']){
                 case 'string':
@@ -152,30 +152,30 @@ class RedisCache
             if(is_array($result['data'])&&!empty($result['data']))
                 $data = $result['data'];
             else
-                $data = json_encode([[$paramsData['result_value']]]);
+                $data = json_encode([[$paramsData['result_value']]]); //防止缓存穿透
         }else{
-            $data = json_encode([[$paramsData['result_value']]]);
+            $data = json_encode([[$paramsData['result_value']]]); //防止缓存穿透
         }
         //将持久化数据写入缓存
         switch ($paramsData['type']){
             case 'string':
-                $this->redisCache->set($paramsData['key'], $data[0][0], $paramsData['cache_timeout']);
+                $this->redisCache->set($paramsData['key'], $data[0], $paramsData['cache_timeout']);
                 break;
             case 'hash':
-                $this->redisCache->hSet($paramsData['key'], $paramsData['field'], $data[0][0]);
+                $this->redisCache->hSet($paramsData['key'], $paramsData['field'], $data[0]);
                 break;
             case 'list':
-                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                $this->redisCache->set($paramsData['key'], $data[0]);
                 break;
             case 'set':
-                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                $this->redisCache->set($paramsData['key'], $data[0]);
                 break;
             case 'sorted_set':
-                $this->redisCache->set($paramsData['key'], $data[0][0]);
+                $this->redisCache->set($paramsData['key'], $data[0]);
                 break;
         }
 
-        return $data[0][0];
+        return $data[0];
     }
 
     /**
@@ -257,9 +257,8 @@ class RedisCache
      */
     private function _cacheAsideMode(int $option, array $paramsData)
     {
-        $param = '';
         if ($option == 1) {
-            if ((isset($paramsData['key']) && $paramsData['key']) && (isset($paramsData['msg']) && $paramsData['msg'])) {
+            if ((isset($paramsData['key']) && !empty($paramsData['key'])) && (isset($paramsData['msg']) && !empty($paramsData['msg']))) {
                 switch ($paramsData['type']) {
                     case 'string':
                         $param[$paramsData['key']] = $paramsData['msg'];
@@ -282,6 +281,8 @@ class RedisCache
             }
         }elseif ($option == 2){
             $param = $paramsData['key'];
+        }else{
+            $param = '';
         }
 
         if ($this->mysqlInstance){
@@ -289,7 +290,8 @@ class RedisCache
             $action = $this->mysqlInstance['action'];
             try{
                 if ($option == 2 ){
-                    if ($this->redisCache->get($this->rock_key) == $this->lock_name){
+                    //防止缓存击穿
+                    if ($this->redisCache->get("lock:".$this->rock_key) == $this->lock_name){
                         $result = call_user_func_array([new $class(), $action], [$param]);
                     }else{
                         $result = json_encode([]);
