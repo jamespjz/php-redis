@@ -137,6 +137,7 @@ class RedisCache
      */
     private function _getCacheData(int $cache_mode, array $config, array $paramsData)
     {
+        $cacheTimeout = $paramsData['cache_timeout'] + $this->_randomDate();
         $param = [
             'token_key' => $this->rock_key,
             'lock_timeout' => $config['lock_timeout'], //锁的超时时间
@@ -152,14 +153,14 @@ class RedisCache
             if(is_array($result['data'])&&!empty($result['data']))
                 $data = $result['data'];
             else
-                $data = json_encode([[$paramsData['result_value']]]); //防止缓存穿透
+                $data = [$paramsData['result_value']]; //防止缓存穿透
         }else{
-            $data = json_encode([[$paramsData['result_value']]]); //防止缓存穿透
+            $data = [$paramsData['result_value']]; //防止缓存穿透
         }
         //将持久化数据写入缓存
         switch ($paramsData['type']){
             case 'string':
-                $this->redisCache->set($paramsData['key'], $data[0], $paramsData['cache_timeout']);
+                $this->redisCache->set($paramsData['key'], $data[0], $cacheTimeout);
                 break;
             case 'hash':
                 $this->redisCache->hSet($paramsData['key'], $paramsData['field'], $data[0]);
