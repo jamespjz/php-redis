@@ -9,7 +9,7 @@
             "email": "jianzhongpi@163.com"
         }
     ],
-    "minimum-stability": "dev-master",
+    "minimum-stability": "master",
     "require": {
         "php":">=7.0",
         "jamespi/php-consul-plugin": "dev-master"
