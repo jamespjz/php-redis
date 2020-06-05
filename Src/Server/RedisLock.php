@@ -13,7 +13,7 @@
 namespace Jamespi\Redis\Server;
 
 use Jamespi\Redis\Api\RedisLockInterface;
-class RedisLock extends redisBasic implements RedisLockInterface
+class RedisLock extends RedisBasic implements RedisLockInterface
 {
     /**
      * 获取分布式锁
@@ -65,10 +65,7 @@ luascript;
             then
                 if redis.call('del', KEYS[1]) == 1 
                 then
-                    if redis.call('hdel', 'client',KEYS[1]) == 1
-                    then
-                        return 1
-                    end
+                    return 1
                 end
             end
             return 0

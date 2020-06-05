@@ -13,7 +13,7 @@
 namespace Jamespi\Redis\Server;
 
 use Jamespi\Redis\Api\RedisApiInterface;
-class RedisCache extends redisBasic implements RedisApiInterface
+class RedisCache extends RedisBasic implements RedisApiInterface
 {
 
     /**
