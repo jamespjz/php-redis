@@ -12,7 +12,7 @@
     "minimum-stability": "dev",
     "require": {
         "php":">=7.0",
-        "jamespi/php-consul-plugin": "dev-master"
+        "jamespi/php-consul-plugin": "dev"
     },
     "autoload": {
         "psr-4": {
