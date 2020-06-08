@@ -166,13 +166,10 @@ class RedisCache
                 $this->redisCache->hSet($paramsData['key'], $paramsData['field'], $data[0]);
                 break;
             case 'list':
-                $this->redisCache->set($paramsData['key'], $data[0]);
+                $this->redisCache->LPUSH ($paramsData['key'], $data[0]);
                 break;
             case 'set':
-                $this->redisCache->set($paramsData['key'], $data[0]);
-                break;
-            case 'sorted_set':
-                $this->redisCache->set($paramsData['key'], $data[0]);
+                $this->redisCache->sadd($paramsData['key'], $data[0]);
                 break;
         }
 

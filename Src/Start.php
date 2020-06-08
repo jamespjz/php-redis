@@ -41,8 +41,8 @@ class Start
 
     public function __construct()
     {
-        $this->config = require_once (__DIR__.'/Config/config.php');
-        $this->cacheConfig = require_once (__DIR__.'/Config/cacheConfig.php');
+        $this->config = include (__DIR__.'/Config/config.php');
+        $this->cacheConfig = include (__DIR__.'/Config/cacheConfig.php');
     }
 
     /**
