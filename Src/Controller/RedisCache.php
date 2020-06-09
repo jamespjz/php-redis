@@ -54,20 +54,20 @@ class RedisCache
         foreach ($arguments as $key=>$value){
             switch ($key){
                 case 'cache_mode':
-                    if (is_int($value) && !empty($value))
-                        $this->paramsData['cache_mode'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['cache_mode'] = (int)$value;
                     break;
                 case 'key':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['key'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['key'] = (string)$value;
                     break;
                 case 'msg':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['msg'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['msg'] = (string)$value;
                     break;
                 case 'type':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['type'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['type'] = (string)$value;
                     break;
             }
         }
@@ -85,24 +85,24 @@ class RedisCache
         foreach ($arguments as $key=>$value){
             switch ($key){
                 case 'cache_mode':
-                    if (is_int($value) && !empty($value))
-                        $this->paramsData['cache_mode'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['cache_mode'] = (int)$value;
                     break;
                 case 'key':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['key'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['key'] = (string)$value;
                     break;
                 case 'field':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['field'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['field'] = (string)$value;
                     break;
                 case 'type':
-                    if (is_string($value) && !empty($value))
-                        $this->paramsData['type'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['type'] = (string)$value;
                     break;
                 case 'cache_timeout':
-                    if (is_int($value) && !empty($value))
-                        $this->paramsData['cache_timeout'] = $value;
+                    if (!empty($value))
+                        $this->paramsData['cache_timeout'] = (int)$value;
                     break;
             }
         }

@@ -75,4 +75,19 @@ class RedisLock
         }
         return Common::resultMsg('failed', '分布式锁释放失败');
     }
+
+    /**
+     * 查询分布式锁key是否被定义
+     * @param $instance
+     * @param string $token_key
+     * @return object|string
+     */
+    public function isLock($instance, string $token_key){
+        $token_key = 'lock:'.$token_key;
+        $result = $this->redisLock->isKey($instance, $token_key);
+        if ($result){
+            return Common::resultMsg('success', '该分布式锁key已被定义', ['status'=>true, 'msg'=>'该分布式锁key已被定义']);
+        }
+        return Common::resultMsg('failed', '该分布式锁key未被定义', ['status'=>false, 'msg'=>'该分布式锁key未被定义']);
+    }
 }

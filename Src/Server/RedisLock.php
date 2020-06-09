@@ -77,6 +77,28 @@ luascript;
         return false;
     }
 
+    /**
+     * 判断redis的key是否存在
+     * @param array $instance 链接redis实例化对象
+     * @param string $token_key 分布式锁key
+     * @return mixed|void
+     */
+    public function isKey($instance, string $token_key){
+        $script = <<<luascript
+            local res = redis.call('get', KEYS[1])
+            if not res then
+                return 0
+            end
+            
+            return 1
+luascript;
+        $result = $instance->eval($script, array($token_key), 1);
+        if ($result == 1) {
+            return true;
+        }
+        return false;
+    }
+
     public function __call($name, $arguments)
     {
         // TODO: Implement __call() method.
