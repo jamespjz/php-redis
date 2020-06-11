@@ -39,6 +39,11 @@ class RedisLock
      * @var
      */
     protected $acquire_number = 3;
+	/**
+     * redis分布式锁失败后沦陷次数
+     * @var
+     */
+    protected $requests_number = 3;
     /**
      * 请求分布式锁超时时间（微妙）
      * @var
@@ -53,7 +58,7 @@ class RedisLock
      * Redis服务器链接
      * @var
      */
-    protected $instance;
+    protected static $instance;
 
     /**
      * RedisLock constructor.
@@ -62,7 +67,8 @@ class RedisLock
     public function __construct(array $config)
     {
         $this->config = $config;
-        $this->instance = $this->connect($this->config);
+        if (is_null(self::$instance))
+            self::$instance = $this->connect($this->config);
     }
 
     /**
@@ -126,6 +132,10 @@ class RedisLock
                     if (!empty($value))
                         $this->acquire_number = (int)$value;
                     break;
+				case 'requests_number':
+                    if (!empty($value))
+                        $this->requests_number = (int)$value;
+                    break;
                 case 'acquire_timeout':
                     if (!empty($value))
                         $this->acquire_timeout = (int)$value;
@@ -149,10 +159,16 @@ class RedisLock
             return Common::resultMsg('failed', 'REDIS服务器链接不上');
         }
 
-        //调用获取分布式锁业务
-        $redisService = new RedisLockLogic(new RedisLockServer($this->config));
-        $result = $redisService->acquireLock($this->instance, $this->token_key, $this->acquire_number, $this->acquire_timeout, $this->lock_timeout, $this->config);
-        return $result;
+        try{
+            //调用获取分布式锁业务
+            $redisService = new RedisLockLogic(new RedisLockServer($this->config));
+            $result = $redisService->acquireLock(self::$instance, $this->token_key, $this->acquire_number, $this->requests_number, $this->acquire_timeout, $this->lock_timeout, $this->config);
+            return $result;
+        }catch (\Exception $e){
+            return Common::resultMsg('failed', '分布式锁获取失败', [$e->getMessage()]);;
+        }finally{
+            self::$instance->close();
+        }
     }
 
     /**
@@ -182,11 +198,17 @@ class RedisLock
         if (!$this->ping($this->config['host'], $this->config['port'])){
             return Common::resultMsg('failed', 'REDIS服务器链接不上');
         }
-
-        //调用获取分布式锁业务
-        $redisService = new RedisLockLogic(new RedisLockServer($this->config));
-        $result = $redisService->unLock($this->instance, $this->token_key, $this->identifier);
-        return $result;
+		
+		try{
+            //调用获取分布式锁业务
+			$redisService = new RedisLockLogic(new RedisLockServer($this->config));
+			$result = $redisService->unLock(self::$instance, $this->token_key, $this->identifier);
+			return $result;
+        }catch (\Exception $e){
+            return Common::resultMsg('failed', '分布式锁释放失败', [$e->getMessage()]);;
+        }finally{
+            self::$instance->close();
+        }
     }
 
     /**
@@ -211,11 +233,17 @@ class RedisLock
         if (!$this->ping($this->config['host'], $this->config['port'])){
             return Common::resultMsg('failed', 'REDIS服务器链接不上');
         }
-
-        //调用获取分布式锁业务
-        $redisService = new RedisLockLogic(new RedisLockServer($this->config));
-        $result = $redisService->isLock($this->instance, $this->token_key);
-        return $result;
+		
+		try{
+            //调用获取分布式锁业务
+			$redisService = new RedisLockLogic(new RedisLockServer($this->config));
+			$result = $redisService->isLock(self::$instance, $this->token_key);
+			return $result;
+        }catch (\Exception $e){
+            return Common::resultMsg('failed', '分布式锁获取失败', [$e->getMessage()]);;
+        }finally{
+            self::$instance->close();
+        }
     }
 
     /**
