@@ -106,7 +106,7 @@ class RedisLock
         if ($redis_setting == 1){
             //单机redis
             $redis = new Redis();
-            $redis->connect($host, $port);
+            $redis->connect($host, $port, 1.5);
             $redis->auth($auth);
         }else{
             //集群redis
