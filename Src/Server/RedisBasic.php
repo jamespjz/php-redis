@@ -27,12 +27,13 @@ abstract class RedisBasic
      * Redis服务器链接
      * @var
      */
-    protected $redisInstance;
+    protected static $redisInstance;
 
     public function __construct(array $config)
     {
         $this->config = $config;
-        $this->redisInstance = $this->_redisConnect($this->config);
+        if (is_null(self::$redisInstance))
+            self::$redisInstance = $this->_redisConnect($this->config);
     }
 
     /**
@@ -49,20 +50,20 @@ abstract class RedisBasic
         foreach ($config as $key=>$value){
             switch ($key){
                 case 'host':
-                    if (is_string($value) && !empty($value))
-                        $host = $value;
+                    if (!empty($value))
+                        $host = (string)$value;
                     break;
                 case 'port':
-                    if (is_int($value) && !empty($value))
-                        $port = $value;
+                    if (!empty($value))
+                        $port = (int)$value;
                     break;
                 case 'auth':
-                    if (is_string($value) && !empty($value))
-                        $auth = $value;
+                    if (!empty($value))
+                        $auth = (string)$value;
                     break;
                 case 'redis_setting':
-                    if (is_int($value) && !empty($value))
-                        $redis_setting = $value;
+                    if (!empty($value))
+                        $redis_setting = (int)$value;
                     break;
             }
         }
@@ -70,7 +71,7 @@ abstract class RedisBasic
         if ($redis_setting == 1){
             //单机redis
             $redis = new Redis();
-            $redis->connect($host, $port);
+            $redis->connect($host, $port, 1.5);
             $redis->auth($auth);
         }else{
             //集群redis

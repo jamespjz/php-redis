@@ -27,7 +27,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function set(string $key, string $value, int $timeout, bool $is_add=false):bool
     {
         if (!empty($key) && $is_add)   $key = "cache:".$key;
-        return $this->redisInstance->set($key, $value, $timeout);
+        return self::$redisInstance->set($key, $value, $timeout);
     }
 
     /**
@@ -39,7 +39,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function get(string $key, bool $is_add=false)
     {
         if (!empty($key) && $is_add)   $key = "cache:".$key;
-        return $this->redisInstance->get($key);
+        return self::$redisInstance->get($key);
     }
 
     /**
@@ -50,7 +50,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function del(string $key):int
     {
         if (!empty($key))   $key = "cache:".$key;
-        return $this->redisInstance->del($key);
+        return self::$redisInstance->del($key);
     }
 
     /**
@@ -62,7 +62,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function hdel(string $key, string $field):int
     {
         if (!empty($key))   $key = "cache:".$key;
-        return $this->redisInstance->hdel($key, $field);
+        return self::$redisInstance->hdel($key, $field);
     }
 
     /**
@@ -73,7 +73,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function lpop(string $key)
     {
         if (!empty($key))   $key = "cache:".$key;
-        return $this->redisInstance->lpop($key);
+        return self::$redisInstance->lpop($key);
     }
 
     /**
@@ -84,7 +84,7 @@ class RedisCache extends RedisBasic implements RedisApiInterface
     public function rpop(string $key)
     {
         if (!empty($key))   $key = "cache:".$key;
-        return $this->redisInstance->rpop($key);
+        return self::$redisInstance->rpop($key);
     }
 
     public function __call($name, $arguments)
