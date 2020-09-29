@@ -68,10 +68,11 @@ class RedisLock
      * 释放分布式锁
      * @param $instance 链接redis实例化对象
      * @param string $token_key 分布式锁key
+	 * @param int $requests_number 分布式锁失败后沦陷次数
      * @param string $identifier 分布式锁key值
      * @return string
      */
-    public function unLock($instance, string $token_key, string $identifier):string
+    public function unLock($instance, string $token_key, int $requests_number, string $identifier):string
     {
 		$i = 0;
         $token_key = 'lock:'.$token_key;

@@ -15,7 +15,7 @@ namespace Jamespi\Redis\Logic;
 use ReflectionClass;
 use Jamespi\Redis\Api\RedisApiInterface;
 use Jamespi\Redis\Common\Common;
-use Jamespi\Redis\Controller\RedisLock;
+use Jamespi\Redis\Controller\JaegerClinet;
 class RedisCache
 {
     /**
@@ -142,7 +142,7 @@ class RedisCache
             'lock_timeout' => $config['lock_timeout'], //锁的超时时间
             'acquire_timeout' => $config['acquire_timeout'] //请求锁超时时间(单位微秒)
         ];
-        $lock = new RedisLock($config);
+        $lock = new JaegerClinet($config);
         //获取分布式锁
         $lockInfo = json_decode($lock->acquireLock($param), true);
         $this->lock_name = $lockInfo['data'][0];

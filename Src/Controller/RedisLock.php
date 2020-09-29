@@ -184,6 +184,10 @@ class RedisLock
                     if (!empty($value))
                         $this->token_key = (string)$value;
                     break;
+				case 'requests_number':
+                    if (!empty($value))
+                        $this->requests_number = (int)$value;
+                    break;
                 case 'identifier':
                     if (!empty($value))
                         $this->identifier = (string)$value;
@@ -202,7 +206,7 @@ class RedisLock
 		try{
             //调用获取分布式锁业务
 			$redisService = new RedisLockLogic(new RedisLockServer($this->config));
-			$result = $redisService->unLock(self::$instance, $this->token_key, $this->identifier);
+			$result = $redisService->unLock(self::$instance, $this->token_key, $this->requests_number, $this->identifier);
 			return $result;
         }catch (\Exception $e){
             return Common::resultMsg('failed', '分布式锁释放失败', [$e->getMessage()]);;
