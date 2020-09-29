@@ -184,7 +184,7 @@ class RedisLock
                     if (!empty($value))
                         $this->token_key = (string)$value;
                     break;
-				case 'requests_number':
+                case 'requests_number':
                     if (!empty($value))
                         $this->requests_number = (int)$value;
                     break;

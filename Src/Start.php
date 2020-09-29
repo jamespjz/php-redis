@@ -14,7 +14,7 @@ namespace Jamespi\Redis;
 
 use ReflectionClass;
 use Jamespi\Redis\Controller\RedisApi;
-use Jamespi\Redis\Controller\JaegerClinet;
+use Jamespi\Redis\Controller\RedisLock;
 use Jamespi\Redis\Controller\RedisCache;
 class Start
 {
@@ -67,13 +67,13 @@ class Start
                 $this->model = (new RedisApi($this->config));
                 break;
             case 2:
-                $this->model = (new JaegerClinet($this->config));
+                $this->model = (new RedisLock($this->config));
                 break;
             case 3:
                 $this->model = (new RedisCache($this->cacheConfig, $mysql));
                 break;
             default:
-                $this->model = (new JaegerClinet($this->config));
+                $this->model = (new RedisLock($this->config));
                 break;
         }
 
