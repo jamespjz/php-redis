@@ -18,15 +18,15 @@ class RedisLock extends RedisBasic implements RedisLockInterface
     /**
      * 获取分布式锁
      * @param $instance 链接redis实例化对象
-     * @param string $token_key 分布式锁key
+     * @param string $tokenKey 分布式锁key
      * @param string $identifier 分布式锁key值
-     * @param int $acquire_time 请求分布式锁时间
-     * @param int $lock_timeout 分布式锁过期时间
+     * @param int $acquireTime 请求分布式锁时间
+     * @param int $lockTimeOut 分布式锁过期时间
      * @return bool
      */
-    public function acquireLock($instance, string $token_key, string $identifier, int $acquire_time, int $lock_timeout)
+    public function acquireLock($instance, string $tokenKey, string $identifier, int $acquireTime, int $lockTimeOut)
     {
-        if (time() < $acquire_time) {
+        if (time() < $acquireTime) {
             $script = <<<luascript
                 local result = redis.call('setnx',KEYS[1],ARGV[1])
                 if result == 1 then
@@ -41,7 +41,7 @@ class RedisLock extends RedisBasic implements RedisLockInterface
                 end
                 return 0
 luascript;
-            $result = $instance->eval($script, array($token_key, $identifier, $lock_timeout), 1);
+            $result = $instance->eval($script, array($tokenKey, $identifier, $lockTimeOut), 1);
             if ($result == 1) {
                 return $identifier;
             }
@@ -53,11 +53,11 @@ luascript;
     /**
      * 释放分布式锁
      * @param array $instance 链接redis实例化对象
-     * @param string $token_key 分布式锁key
+     * @param string $tokenKey 分布式锁key
      * @param string $identifier 分布式锁key值
      * @return mixed|void
      */
-    public function unLock($instance, string $token_key, string $identifier)
+    public function unLock($instance, string $tokenKey, string $identifier)
     {
         $script = <<<luascript
             local result = redis.call('get', KEYS[1])
@@ -70,7 +70,7 @@ luascript;
             end
             return 0
 luascript;
-        $result = $instance->eval($script, array($token_key, $identifier), 1);
+        $result = $instance->eval($script, array($tokenKey, $identifier), 1);
         if ($result == 1) {
             return true;
         }
@@ -80,10 +80,10 @@ luascript;
     /**
      * 判断redis的key是否存在
      * @param array $instance 链接redis实例化对象
-     * @param string $token_key 分布式锁key
+     * @param string $tokenKey 分布式锁key
      * @return mixed|void
      */
-    public function isKey($instance, string $token_key){
+    public function isKey($instance, string $tokenKey){
         $script = <<<luascript
             local res = redis.call('get', KEYS[1])
             if not res then
@@ -92,7 +92,7 @@ luascript;
             
             return 1
 luascript;
-        $result = $instance->eval($script, array($token_key), 1);
+        $result = $instance->eval($script, array($tokenKey), 1);
         if ($result == 1) {
             return true;
         }

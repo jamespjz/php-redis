@@ -30,65 +30,45 @@ git clone https://github.com/jamespjz/php-redis.git
 composer require jamespi/php-redis dev-master
 ```
 
-# 使用方式
-> 获取redis分布式锁例子
-
+# 分布式锁使用方式
+> 创建锁实例
 ```
-//在您项目根目录的入口文件中加入如下代码：
-require_once 'vendor/autoload.php';
-use Jamespi\Redis\Start;
-/**
- * --------------------------------------------------------------
- * 单节点
- * --------------------------------------------------------------
- */
-$config = [
-    //redis服务器连接信息
-    $config = [
-        'host' => '192.168.109.58',
-        'port' => 6379,
-    ];
-    //redis锁相关信息（出于性能考虑，acquire_timeout建议设置1s以下，系统默认设置的1s，acquire_number系统默认3次，lock_timeout系统默认60s）
-    $param = [
-        'token_key' => 'token_key', //必填，key
-        'acquire_number' => 3, //选填，限制请求次数
-        'lock_timeout' => 60, //选填，锁的超时时间
-        'acquire_timeout' => 1000000 //选填，请求锁超时时间(单位微秒)
-    ];
+$servers = [
+    ['192.168.87.54', '6379', 3, 1.5],
+    ['192.168.87.56', '6379', 3, 1.5],
+    ['192.168.87.194', '6379', 3, 1.5],
+    'auth' => '123456'
 ];
-//业务场景
-$type = 2;//1：redis客户端Api 2：分布式锁 3：分布式缓存
-//redis环境
-$redis_setting = 1; //1：单机环境 2：集群环境
-/**
- * --------------------------------------------------------------
- * 集群
- * --------------------------------------------------------------
- */
- //$config = [
- //    'host' => '192.168.109.54',
- //    'port' => 7002,
- //    'auth' => '123456'
- //];
- //$param = [
- //    'token_key' => 'token_key',
- //    'acquire_number' => 2, //限制请求次数
- //    'lock_timeout' => 300, //锁的超时时间
- //    'acquire_timeout' => 1000000 //请求锁超时时间(单位微秒)
- //];
- //$type = 2;//1：redis客户端Api 2：分布式锁 3：分布式缓存
- //$redis_setting = 2; //1：单节点 2：集群
+new RedisLock($servers)
+```
 
-
-//获取redis分布式锁
-echo (new Start())->run($type, $config, $redis_setting)->acquireLock($param);
-//释放redis分布式锁
+> 获取redis分布式锁例子
+```
 $params = [
-    'token_key' => 'token_key',
+    'token_key' => 'redis_key',
+    'acquire_number' => 3,
+    'requests_number' => 3,
+    'lock_timeout' => 300 //单位s
+];
+(new RedisLock($servers))->acquireLock($params);
+```
+> 释放redis分布式锁例子
+```
+$params = [
+    'token_key' => 'redis_key',
     'identifier' => '4a3068a14f90554383dcaedf59c367a3',
 ];
-echo (new Start())->run($type, $config, $redis_setting)->unLock($params);
+(new RedisLock($servers))->unlock($params);
 ```
+> 检测分布式锁key是否已被定义例子
+```
+$params = [
+    'token_key' => 'redis_key'
+];
+(new RedisLock($servers))->isLock($params);
+```
+
+# 分布式缓存使用方式
 > 调用redis分布式缓存例子
 ```
 //获取分布式缓存
