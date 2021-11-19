@@ -13,7 +13,7 @@
 namespace Jamespi\Redis\Server;
 
 use Jamespi\Redis\Api\RedisLockInterface;
-class RedisLock extends RedisBasic implements RedisLockInterface
+class RedisLock implements RedisLockInterface
 {
     /**
      * 获取分布式锁

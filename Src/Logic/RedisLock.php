@@ -13,7 +13,6 @@
 namespace Jamespi\Redis\Logic;
 
 use Jamespi\Redis\Api\RedisLockInterface;
-use Jamespi\Redis\Common\Common;
 class RedisLock
 {
     protected $redisLock;
@@ -48,7 +47,7 @@ class RedisLock
         $lockTimeOut = intval(ceil($lockTimeOut));
         if ($instance->hGet('client', $tokenKey) > $acquireNumber){
             $instance->hDel('client', $tokenKey);
-            return Common::resultMsg('failed', '分布式锁获取次数超过最大请求次数');
+            return json_encode(['status'=>'failed', 'msg'=>'分布式锁获取次数超过最大请求次数']);
         }else{
             $result = '';
 			while($i<$requestsNumber){

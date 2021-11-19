@@ -13,8 +13,7 @@
 namespace Jamespi\Redis\Logic;
 
 use ReflectionClass;
-use Jamespi\Redis\Api\RedisApiInterface;
-use Jamespi\Redis\Common\Common;
+use Jamespi\Redis\Api\RedisCacheInterface;
 use Jamespi\Redis\Controller\RedisLock;
 class RedisCache
 {
@@ -51,9 +50,9 @@ class RedisCache
 
     /**
      * RedisCache constructor.
-     * @param RedisApiInterface $redisCache
+     * @param RedisCacheInterface $redisCache
      */
-    public function __construct(RedisApiInterface $redisCache)
+    public function __construct(RedisCacheInterface $redisCache)
     {
         $this->begintime = date("Y-m-d H:i:s");
         $this->endtime = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"))+7200);
@@ -67,11 +66,11 @@ class RedisCache
      * @param array $paramsData 请求参数
      * @return string
      */
-    public function write(array $config, array $mysql, array $paramsData):string
+    public function write(array $mysql, array $paramsData):string
     {
         $resultStatus = false;
         //缓存更新模式(1：Cache Aside模式 2：Through模式 3：Write Back模式)
-        $cache_mode = (isset($paramsData['cache_mode'])&&$paramsData['cache_mode']>0)?1:1;
+        $cache_mode = (isset($paramsData['cache_mode'])&&$paramsData['cache_mode']>0)?$paramsData['cache_mode']:1;
         $this->_mysqlConnect($mysql);
         $result = $this->_checkMode($cache_mode, 1, $paramsData);
         if ($result){

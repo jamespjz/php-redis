@@ -60,15 +60,15 @@ class RedisLock
      * Redis server connection example
      * @var
      */
-    private static $instance;
+    private static $instances;
 
     public function __construct(array $servers)
     {
         $this->servers = $servers;
-        if (is_null(self::$instance)){
+        if (is_null(self::$instances)){
             $connect = $this->_connect($servers);
             if ($connect)
-                self::$instance = $connect;
+                self::$instances = $connect;
             else
                 throw new Exception("Failed to connect to redis!");
         }
@@ -80,34 +80,33 @@ class RedisLock
      * @return bool|Redis|RedisCluster
      */
     private function _connect(array $servers){
-        if (count($servers) == 0 || ( count($servers)>0 && !is_array($servers[0]) ) || ( count($servers)>0 && ( is_array($servers[0]) && count($servers[0])==0 ) )){
+        $host = [];
+        if (count($servers[0]) == 0 || ( count($servers[0])>0 && !is_array($servers[0][0]) ) || ( count($servers[0])>0 && ( is_array($servers[0][0]) && count($servers[0][0])==0 ) )){
             return false;
         }
 
-        if (count($servers) < 2){
+        if (count($servers[0]) < 2){
             //单机redis
-            $redis = new Redis();
-            $redis->connect($servers[0][0], $servers[0][1], $servers[0][2]);//host、port、timeout连接超时
+            $redis = new \Redis();
+            $redis->connect($servers[0][0][0], $servers[0][0][1], $servers[0][0][2]);//host、port、timeout连接超时
             $redis->auth($servers['auth']);
-            $this->acquireTimeout = ($servers[0][2]??0)+($servers[0][3]??0);
+            $this->acquireTimeout = ($servers[0][0][2]??0)+($servers[0][0][3]??0);
         }else{
             $this->acquireLogo = 2;
-            $host = [];
             $timeout = 0;
             $readTimeout = 0;
-            $auth = '';
-            foreach ($servers as $k=>$v){
+            $auth = $servers['auth'];
+            foreach ($servers[0] as $k=>$v){
                 if (is_array($v)){
-                    $host[] = $v[0].":".$v[1];
                     $timeout = ($timeout < $v[2])?$v[2]:$timeout;
+                    $host[] = $v[0].":".$v[1];
                     $readTimeout = ($readTimeout < $v[3])?$v[3]:$readTimeout;
-                }else{
-                    $auth = $v;
                 }
             }
+
             $this->acquireTimeout = $timeout+$readTimeout;
             //集群redis
-            $redis = new RedisCluster(null, $host, !empty($timeout)?$timeout:1.5, !empty($readTimeout)?$readTimeout:1.5, true, $auth);
+            $redis = new \RedisCluster(null, $host, !empty($timeout)?$timeout:1.5, !empty($readTimeout)?$readTimeout:1.5, true, $auth);
         }
         return $redis;
     }
@@ -117,7 +116,8 @@ class RedisLock
      * @param array $arguments 请求参数
      * @return string
      */
-    public function acquireLock(array $arguments){
+    public function acquireLock(array $arguments):string
+    {
         if ( !(isset($arguments['token_key']) && !empty($arguments['token_key'])) ){
             return json_encode(['status'=>'failed', 'msg'=>'Error:缺少必要参数-分布式锁key!']);
         }
@@ -129,12 +129,10 @@ class RedisLock
         try{
             //调用获取分布式锁业务
             $redisService = new RedisLockLogic(new RedisLockServer());
-            $result = $redisService->acquireLock(self::$instance, $this->tokenkey, $this->acquireNumber, $this->requestsNumber, $this->acquireTimeout, $this->lockTimeOut, $this->acquireLogo);
+            $result = $redisService->acquireLock(self::$instances, $this->tokenkey, $this->acquireNumber, $this->requestsNumber, $this->acquireTimeout, $this->lockTimeOut, $this->acquireLogo);
             return $result;
         }catch (\Exception $e){
             return json_encode(['status'=>'failed', 'msg'=>'分布式锁获取失败,Error:'.$e->getMessage()]);
-        }finally{
-            self::$instance->close();
         }
     }
 
@@ -143,7 +141,8 @@ class RedisLock
      * @param array $arguments 请求参数
      * @return string
      */
-    public function unlock(array $arguments){
+    public function unlock(array $arguments):string
+    {
         if ( !(isset($arguments['token_key']) && !empty($arguments['token_key'])) ){
             return json_encode(['status'=>'failed', 'msg'=>'Error:缺少必要参数-分布式锁key!']);
         }
@@ -156,12 +155,10 @@ class RedisLock
         try{
             //调用获取分布式锁业务
             $redisService = new RedisLockLogic(new RedisLockServer());
-            $result = $redisService->unLock(self::$instance, $this->tokenkey, $this->requestsNumber, $this->identifier);
+            $result = $redisService->unLock(self::$instances, $this->tokenkey, $this->requestsNumber, $this->identifier);
             return $result;
         }catch (\Exception $e){
             return json_encode(['status'=>'failed', 'msg'=>'分布式锁释放失败,Error:'.$e->getMessage()]);
-        }finally{
-            self::$instance->close();
         }
     }
 
@@ -180,12 +177,10 @@ class RedisLock
         try{
             //调用获取分布式锁业务
             $redisService = new RedisLockLogic(new RedisLockServer());
-            $result = $redisService->isLock(self::$instance, $this->tokenkey);
+            $result = $redisService->isLock(self::$instances, $this->tokenkey);
             return $result;
         }catch (\Exception $e){
             return json_encode(['status'=>'failed', 'msg'=>'分布式锁获取失败,Error:'.$e->getMessage()]);
-        }finally{
-            self::$instance->close();
         }
     }
 
